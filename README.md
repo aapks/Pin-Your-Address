@@ -10,7 +10,7 @@ pin your Address using HMS "Huawei Mobile Services"
  * [Configuration ](#configuration )
  * [Supported Environments](#supported-environments)
  * [Sample Code](#Sample-Code)
- * [Refrences](#Refrences)
+ * [References](#References)
  * [License](#license)
 
 ## Introduction
