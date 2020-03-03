@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Pin Your Address</string>
+    <string name="hwlocation_locationupdates">location updates</string>
+    <string name="hwlocation_requestLocationUpdatesWithCallback">requestLocationUpdates with callback</string>
+    <string name="hwlocation_removeLocationUpdatesWithCallback">removeLocationUpdates with callback</string>
+
+</resources>

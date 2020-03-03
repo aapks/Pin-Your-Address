@@ -1,0 +1,51 @@
+apply plugin: 'com.android.application'
+// Add the following line
+apply plugin: 'com.huawei.agconnect'  // HUAWEI agconnect Gradle plugin
+android {
+    compileSdkVersion 29
+    defaultConfig {
+        applicationId "com.zahran.pinyouraddress"
+        //use min sdk 19 because the hauwei location service support min sdk 19
+        minSdkVersion 19
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    signingConfigs {
+        release {
+            storeFile file('Untitled')
+            keyAlias 'hms'
+            keyPassword 'hms253'
+            storePassword 'hms253'
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+    buildTypes {
+//        release {
+////            minifyEnabled false
+////            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+////        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.release
+            debuggable true
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.huawei.hms:location:4.0.1.300'
+    implementation 'com.huawei.hms:maps:4.0.0.301'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+}
