@@ -7,7 +7,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
+
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -15,7 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
+
 
 import com.huawei.hmf.tasks.OnFailureListener;
 import com.huawei.hmf.tasks.OnSuccessListener;
@@ -40,19 +40,27 @@ import com.huawei.hms.maps.OnMapReadyCallback;
 import com.huawei.hms.maps.model.BitmapDescriptorFactory;
 import com.huawei.hms.maps.model.CameraPosition;
 import com.huawei.hms.maps.model.CameraUpdateParam;
-import com.huawei.hms.maps.model.Circle;
-import com.huawei.hms.maps.model.CircleOptions;
 import com.huawei.hms.maps.model.LatLng;
 import com.huawei.hms.maps.model.Marker;
 import com.huawei.hms.maps.model.MarkerOptions;
 import com.huawei.hms.maps.util.LogM;
 
-import com.zahran.pinyouraddress.logger.LocationLog;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+/**
+ * Created By Mahmoud HUSSEIN 01-03-2020
+ * Using HMS "Huawei Mobile Services" to add map and get location.
+ *
+ * using the following Tutorials
+ * LocationKit: https://developer.huawei.com/consumer/en/codelab/HMSLocationKit/index.html#0
+ * MapKit: https://developer.huawei.com/consumer/en/codelab/HMSMapKit/index.html#0
+ *
+ */
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, HuaweiMap.OnCameraIdleListener,
         HuaweiMap.OnCameraMoveStartedListener, HuaweiMap.OnCameraMoveListener {
@@ -93,8 +101,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LogM.d(TAG, "onCreate:hzj");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // check permissions and get it if app don't have it.
 
+        // check permissions and get it if app don't have it.
         if (!hasPermissions(this, RUNTIME_PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, RUNTIME_PERMISSIONS, REQUEST_CODE);
         }
@@ -122,8 +130,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
 
-//        Create a location provider client and device setting client.
-        //create a fusedLocationProviderClient
+//       Create a location provider client and device setting client.
+//       create a fusedLocationProviderClient
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         //create a settingsClient
         mSettingsClient = LocationServices.getSettingsClient(this);
@@ -133,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mLocationRequest.setInterval(50000);
         // Sets the priority to define accuracy needed for location.
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        //get current location and put it with star mark on the map for first init for map!
         if (null == mLocationCallback) {
             mLocationCallback = new LocationCallback() {
                 @Override
@@ -141,15 +151,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         List<Location> locations = locationResult.getLocations();
                         if (!locations.isEmpty()) {
                             for (Location location : locations) {
-                                // mark can be add by HuaweiMap
+//                                save current location LatLng
                                 mLAT_LNG=new LatLng(location.getLatitude(), location.getLongitude());
                                 removeLocationUpdatesWithCallback();
-//                                onMapReady(hMap);
+//                                set current location to the map
+                                setLocationOnMap(hMap, mLAT_LNG, myLocationMarker,true);
 
-                                    setLocationOnMap(hMap, mLAT_LNG, myLocationMarker,true);
-
-
-                                LocationLog.i(TAG,
+                              Log.i(TAG,
                                         "onLocationResult location[Longitude,Latitude,Accuracy]:" + location.getLongitude()
                                                 + "," + location.getLatitude() + "," + location.getAccuracy());
                             }
@@ -161,12 +169,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 public void onLocationAvailability(LocationAvailability locationAvailability) {
                     if (locationAvailability != null) {
                         boolean flag = locationAvailability.isLocationAvailable();
-                        LocationLog.i(TAG, "onLocationAvailability isLocationAvailable:" + flag);
+                        Log.i(TAG, "onLocationAvailability isLocationAvailable:" + flag);
                     }
                 }
             };
         }
 
+//        request location if it doesn't put in LatLng variable
         if (mLAT_LNG==null)
         requestLocationUpdatesWithCallback();
 
@@ -190,22 +199,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d(TAG, "onMapReady: ");
         hMap = map;
 
-// Enable the my-location layer.
-//        hMap.setMyLocationEnabled(true);
+//         Enable the my-location layer.
+//         hMap.setMyLocationEnabled(true);
+//        Enable the function of displaying the my-location icon.
+//        hMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-// Enable the function of displaying the my-location icon.
-        hMap.getUiSettings().setMyLocationButtonEnabled(true);
-// Specify whether to enable the zoom controls.
+//        Specify whether to enable the zoom controls.
         hMap.getUiSettings().setZoomControlsEnabled(true);
         // Specify whether to enable the compass.
         hMap.getUiSettings().setCompassEnabled(true);
+
+//        use geocoder to get Address information using LatLng
         geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
 
 
-// move camera by CameraPosition param ,to my location latlag and zoom params can set here
-
-
-        //   CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(mMarker.getPosition());
+//        request location if it still not saved to LatLng variable
         if (mLAT_LNG == null) {
             requestLocationUpdatesWithCallback();
         } else
@@ -214,6 +222,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             removeLocationUpdatesWithCallback();
         }
 
+//        Map click Listener
         hMap.setOnMapClickListener(new HuaweiMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -236,38 +245,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Log.d(TAG, "onMapClick: Exception"+e.getMessage());
                     e.printStackTrace();
                 }
-               /* try {
-                    addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 8); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
-                if(!addresses.isEmpty()) {
-                    String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-                    String city = addresses.get(0).getLocality();
-                    String state = addresses.get(0).getAdminArea();
-                    String country = addresses.get(0).getCountryName();
-                    String postalCode = addresses.get(0).getPostalCode();
-                    String knownName = addresses.get(0).getFeatureName(); // Only if available else return NULL
-
-                    mMarker = hMap.addMarker(new MarkerOptions().position(latLng)
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.round_person_pin_circle_black_24))
-                            .clusterable(true));
-                    mMarker.setPosition(latLng);
-                    mMarker.setTitle(address);
-                    // move camera by CameraPosition param ,latlag and zoom params can set here
-                    CameraPosition build = new CameraPosition.Builder().target(mMarker.getPosition()).zoom(8).build();
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(build);
-                    mMarker.showInfoWindow();
-
-
-                    //   CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(mMarker.getPosition());
-                    cameraUpdate.getCameraUpdate().setNewLatLngZoom(new CameraUpdateParam.NewLatLngZoom(mMarker.getPosition(),9));
-                    hMap.animateCamera(cameraUpdate);
-
-                }*/
-
 
 
 
@@ -284,28 +261,44 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
     }
-    private void setLocationOnMap(HuaweiMap huaweiMap,LatLng latLng,Marker mMarker,boolean myLocationFlag){
+
+
+    /**
+     *   added by Mahmoud Hussein
+     *   Set location on map custom function to add marker with address on map
+     *
+     * The Following params used in function:-
+     *
+     *      HuaweiMap huaweiMap: used to control Map.
+     *      LatLng latLng: this is Location LatLng.
+     *      Marker marker: this marker used to be added in Map.
+     *      boolean myLocationFlag: this flag used to define is that current location or selected from Map.
+     *
+     */
+    private void setLocationOnMap(HuaweiMap huaweiMap,LatLng latLng,Marker marker,boolean myLocationFlag){
+
 
         if(myLocationFlag){
-            mMarker = huaweiMap.addMarker(new MarkerOptions().position(latLng)
+            marker = huaweiMap.addMarker(new MarkerOptions().position(latLng)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.baseline_stars_black_24))
                     .clusterable(true));
-    }else{
-            mMarker = huaweiMap.addMarker(new MarkerOptions().position(latLng)
+        }else{
+            marker = huaweiMap.addMarker(new MarkerOptions().position(latLng)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.round_person_pin_circle_black_24))
                     .clusterable(true));
-    }
-            build = new CameraPosition.Builder().target(mMarker.getPosition()).zoom(12).build();
+        }
+        //        move camera by CameraPosition param ,to my location latlag and zoom params can set here
+            build = new CameraPosition.Builder().target(marker.getPosition()).zoom(12).build();
             cameraUpdate = CameraUpdateFactory.newCameraPosition(build);
 
             try {
                 // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-                addresses = geocoder.getFromLocation(mMarker.getPosition().latitude, mMarker.getPosition().longitude, 1);
+                addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude, 1);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-// If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+            // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
             if (!addresses.isEmpty()) {
                 String address = addresses.get(0).getAddressLine(0);
                 String city = addresses.get(0).getLocality();
@@ -313,11 +306,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String country = addresses.get(0).getCountryName();
                 String postalCode = addresses.get(0).getPostalCode();
                 String knownName = addresses.get(0).getFeatureName(); // Only if available else return NULL
-                mMarker.setTitle(address);
-                mMarker.showInfoWindow();
+                marker.setTitle(address);
+                marker.showInfoWindow();
             }
-            cameraUpdate.getCameraUpdate().setNewLatLngZoom(new CameraUpdateParam.NewLatLngZoom(mMarker.getPosition(), 9));
+            // set camera update to change camera position to marker position
+            cameraUpdate.getCameraUpdate().setNewLatLngZoom(new CameraUpdateParam.NewLatLngZoom(marker.getPosition(), 9));
             huaweiMap.animateCamera(cameraUpdate);
+            // set zoom configuration
             huaweiMap.setMaxZoomPreference(13);
             huaweiMap.setMinZoomPreference(1);
 
@@ -325,6 +320,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -383,13 +379,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    LocationLog.i(TAG, "requestLocationUpdatesWithCallback onSuccess");
+                                   Log.i(TAG, "requestLocationUpdatesWithCallback onSuccess");
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(Exception e) {
-                                    LocationLog.e(TAG,
+                                    Log.e(TAG,
                                             "requestLocationUpdatesWithCallback onFailure:" + e.getMessage());
                                 }
                             });
@@ -398,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(Exception e) {
-                            LocationLog.e(TAG, "checkLocationSetting onFailure:" + e.getMessage());
+                           Log.e(TAG, "checkLocationSetting onFailure:" + e.getMessage());
                             int statusCode = ((ApiException) e).getStatusCode();
                             switch (statusCode) {
                                 case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -416,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 removeLocationUpdatesWithCallback();
             }
         } catch (Exception e) {
-            LocationLog.e(TAG, "requestLocationUpdatesWithCallback exception:" + e.getMessage());
+            Log.e(TAG, "requestLocationUpdatesWithCallback exception:" + e.getMessage());
         }
     }
     private static boolean hasPermissions(Context context, String... permissions) {
@@ -438,49 +434,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Callback when the camera stops moving
     @Override
     public void onCameraIdle() {
-//        if (mLAT_LNG == null) {
-//            requestLocationUpdatesWithCallback();
-//        } else
-//        {
-//            setLocationOnMap(hMap, mLAT_LNG, myLocationMarker,true);
-//            removeLocationUpdatesWithCallback();
-//        }
-//        Log.i(TAG, "onCameraIdle: successful");
-//        if (mLAT_LNG==null){
-//            requestLocationUpdatesWithCallback();
-//        }else
-//            {
-//
-//            myLocationMarker = hMap.addMarker(new MarkerOptions().position(mLAT_LNG)
-//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.baseline_stars_black_24))
-//                    .clusterable(true));
-//            build = new CameraPosition.Builder().target(myLocationMarker.getPosition()).zoom(12).build();
-//            cameraUpdate = CameraUpdateFactory.newCameraPosition(build);
-//
-//            try {
-//                // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-//                addresses = geocoder.getFromLocation(myLocationMarker.getPosition().latitude, myLocationMarker.getPosition().longitude, 1);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//// If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-//            if (!addresses.isEmpty()) {
-//                String address = addresses.get(0).getAddressLine(0);
-//                String city = addresses.get(0).getLocality();
-//                String state = addresses.get(0).getAdminArea();
-//                String country = addresses.get(0).getCountryName();
-//                String postalCode = addresses.get(0).getPostalCode();
-//                String knownName = addresses.get(0).getFeatureName(); // Only if available else return NULL
-//                myLocationMarker.setTitle(address);
-//                myLocationMarker.showInfoWindow();
-//            }
-//            cameraUpdate.getCameraUpdate().setNewLatLngZoom(new CameraUpdateParam.NewLatLngZoom(myLocationMarker.getPosition(), 9));
-//            hMap.animateCamera(cameraUpdate);
-//            hMap.setMaxZoomPreference(8);
-//            hMap.setMinZoomPreference(1);
-//            removeLocationUpdatesWithCallback();
-//        }
+        Log.i(TAG, "onCameraIdle: successful");
     }
     // Callback during camera moving
     @Override
@@ -497,17 +451,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             voidTask.addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    LocationLog.i(TAG, "removeLocationUpdatesWithCallback onSuccess");
+                    Log.i(TAG, "removeLocationUpdatesWithCallback onSuccess");
                 }
             })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(Exception e) {
-                            LocationLog.e(TAG, "removeLocationUpdatesWithCallback onFailure:" + e.getMessage());
+                            Log.e(TAG, "removeLocationUpdatesWithCallback onFailure:" + e.getMessage());
                         }
                     });
         } catch (Exception e) {
-            LocationLog.e(TAG, "removeLocationUpdatesWithCallback exception:" + e.getMessage());
+            Log.e(TAG, "removeLocationUpdatesWithCallback exception:" + e.getMessage());
         }
     }
 

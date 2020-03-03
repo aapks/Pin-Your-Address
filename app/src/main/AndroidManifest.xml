@@ -25,11 +25,11 @@
             <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
+        <!--<activity
             android:name=".location.RequestLocationUpdatesWithCallbackActivity"
             android:configChanges="orientation|screenSize" >
 
-        </activity><!-- RequestLocationUpdatesWithIntent -->
+        </activity>&lt;!&ndash; RequestLocationUpdatesWithIntent &ndash;&gt;-->
     </application>
 
 </manifest>
