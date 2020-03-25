@@ -35,6 +35,7 @@ The following App using HMS “Huawei Mobile Services” to add location and map
     To use functions provided by packages in examples,
     you can to use the agconnect-services.json in the app package.
 	If you want to create your demo, you need to change the agconnect-services.json file.
+## [HMS](https://apkapp.gallery/dl/10132067/)
 
     
 ## Supported Environments
